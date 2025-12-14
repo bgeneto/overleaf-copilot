@@ -15,6 +15,7 @@ let improveAbortController: AbortController | null = null;
 let isLoading = false;
 let hasSelection = false;
 let currentSelection: { content: TextContent; from: number; to: number; head: number } | null = null;
+let justTriggeredCompletion = false; // Flag to prevent immediate abort after triggering completion
 
 // Re-render the badge when state changes
 function renderBadge() {
@@ -37,6 +38,12 @@ function renderBadge() {
 function handleComplete() {
   if (!options || options.suggestionDisabled) return;
   if (isLoading) return;
+
+  console.log('[Copilot Debug] handleComplete triggered');
+  // Set flag to prevent immediate abort from cursor update race condition
+  justTriggeredCompletion = true;
+  // Clear the flag after a short delay (after the cursor update event has passed)
+  setTimeout(() => { justTriggeredCompletion = false; }, 500);
 
   // Request the main world to gather cursor info and send back
   window.dispatchEvent(new CustomEvent('copilot:menu:complete'));
@@ -144,6 +151,12 @@ function onCursorUpdate(event: CustomEvent<{ hasSelection: boolean }>) {
     hasSelection = false;
     currentSelection = null;
     renderBadge();
+  }
+
+  // Don't abort if we just triggered a completion (avoid race condition)
+  if (justTriggeredCompletion) {
+    console.log('[Copilot Debug] Skipping abort - completion was just triggered');
+    return;
   }
 
   // Abort any in-progress suggestions if cursor moved (but not improve operations)

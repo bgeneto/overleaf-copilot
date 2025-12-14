@@ -48,6 +48,12 @@ export async function* getImprovementStream(content: TextContent, prompt: string
     };
     return;
   } else {
+    console.log('[Copilot Debug] Improvement request:', {
+      baseURL: options.apiBaseUrl,
+      model: options.model,
+      apiKeyPrefix: options.apiKey?.substring(0, 15) + '...',
+    });
+
     const openai = new OpenAI({
       apiKey: options.apiKey,
       baseURL: options.apiBaseUrl,
@@ -55,23 +61,37 @@ export async function* getImprovementStream(content: TextContent, prompt: string
     });
 
     try {
+      const promptContent = buildImprovePrompt(content, prompt);
+      console.log('[Copilot Debug] Prompt (first 200 chars):', promptContent.substring(0, 200));
+
       const stream = await openai.chat.completions.create({
         messages: [
           {
             role: 'user',
-            content: buildImprovePrompt(content, prompt),
+            content: promptContent,
           },
         ],
         model: options.model || DEFAULT_MODEL,
         stream: true,
       }, { signal: signal });
 
+      console.log('[Copilot Debug] Stream started successfully');
+
+      let chunkCount = 0;
       for await (const chunk of stream) {
-        yield { kind: "token", content: chunk.choices[0]?.delta?.content || '' };
+        chunkCount++;
+        const tokenContent = chunk.choices[0]?.delta?.content || '';
+        if (chunkCount <= 3) {
+          console.log(`[Copilot Debug] Chunk ${chunkCount}:`, tokenContent.substring(0, 50));
+        }
+        yield { kind: "token", content: tokenContent };
       }
+      console.log(`[Copilot Debug] Stream completed with ${chunkCount} chunks`);
 
     } catch (error) {
+      console.error('[Copilot Debug] Error in improvement stream:', error);
       if (error instanceof APIUserAbortError) {
+        console.log('[Copilot Debug] Request was aborted by user');
         return;
       }
       yield { kind: "error", content: "An error occurred while generating the content.\n" + error };
