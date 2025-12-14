@@ -8,6 +8,12 @@ chrome.runtime.onMessage.addListener(function (request) {
         '?selection=' +
         encodeURIComponent(request.payload.selection),
     });
+  } else if (request.type === 'open-options') {
+    if (chrome.runtime.openOptionsPage) {
+      chrome.runtime.openOptionsPage();
+    } else {
+      chrome.tabs.create({ url: chrome.runtime.getURL('options.html') });
+    }
   }
 });
 

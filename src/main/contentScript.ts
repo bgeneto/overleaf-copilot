@@ -4,41 +4,113 @@ import { getContentBeforeCursor, getCmView, updateSuggestionOnCursorUpdate, getC
 import { onAcceptPartialSuggestion, onAcceptSuggestion, onReplaceContent } from './eventHandlers';
 import { MAX_LENGTH_AFTER_CURSOR, MAX_LENGTH_BEFORE_CURSOR, MAX_LENGTH_SELECTION } from '../constants';
 
-function debounce<T extends () => void>(func: T): () => void {
-  let timeout: NodeJS.Timeout | null;
+// Store the configured keyboard shortcut
+let completionShortcut: { key: string; ctrl: boolean; alt: boolean; shift: boolean; meta: boolean } | null = null;
 
-  return function () {
-    window.dispatchEvent(new CustomEvent('copilot:cursor:update'));
-    document.getElementById('copilot-toolbar')?.remove();
-    document.getElementById('copilot-toolbar-editor')?.remove();
-    updateSuggestionOnCursorUpdate();
+// Parse shortcut string like "Ctrl+Space" or "Alt+C"
+function parseShortcut(shortcut: string | undefined) {
+  if (!shortcut || shortcut.trim() === '') {
+    completionShortcut = null;
+    return;
+  }
 
-    if (timeout) clearTimeout(timeout);
-
-    timeout = setTimeout(() => {
-      func();
-      timeout = null;
-    }, 500);
+  const parts = shortcut.toLowerCase().split('+').map(p => p.trim());
+  const parsed = {
+    key: '',
+    ctrl: false,
+    alt: false,
+    shift: false,
+    meta: false,
   };
-}
 
-function onKeyDown(event: KeyboardEvent) {
-  if (event.key == 'Tab') {
-    onAcceptSuggestion();
-  } else if ((event.metaKey || event.ctrlKey) && event.key == 'ArrowRight') {
-    onAcceptPartialSuggestion();
+  for (const part of parts) {
+    if (part === 'ctrl' || part === 'control') parsed.ctrl = true;
+    else if (part === 'alt') parsed.alt = true;
+    else if (part === 'shift') parsed.shift = true;
+    else if (part === 'cmd' || part === 'meta' || part === 'command') parsed.meta = true;
+    else if (part === 'space') parsed.key = ' ';
+    else parsed.key = part;
+  }
+
+  if (parsed.key) {
+    completionShortcut = parsed;
+  } else {
+    completionShortcut = null;
   }
 }
 
-function onCursorUpdate() {
-  var view = getCmView();
+// Listen for options updates
+window.addEventListener('copilot:options:update', ((event: CustomEvent<{ options: { completionShortcut?: string } }>) => {
+  parseShortcut(event.detail.options.completionShortcut);
+}) as EventListener);
+
+// Handle keyboard shortcuts for accepting suggestions AND triggering completion
+function onKeyDown(event: KeyboardEvent) {
+  // Handle Tab for accepting suggestions
+  if (event.key == 'Tab') {
+    onAcceptSuggestion();
+    return;
+  }
+
+  // Handle Ctrl+Arrow for partial accept
+  if ((event.metaKey || event.ctrlKey) && event.key == 'ArrowRight') {
+    onAcceptPartialSuggestion();
+    return;
+  }
+
+  // Handle configurable shortcut for triggering completion
+  if (completionShortcut) {
+    const keyMatches = event.key.toLowerCase() === completionShortcut.key ||
+      (completionShortcut.key === ' ' && event.key === ' ');
+    const modifiersMatch =
+      event.ctrlKey === completionShortcut.ctrl &&
+      event.altKey === completionShortcut.alt &&
+      event.shiftKey === completionShortcut.shift &&
+      event.metaKey === completionShortcut.meta;
+
+    if (keyMatches && modifiersMatch) {
+      event.preventDefault();
+      event.stopPropagation();
+      triggerCompletion();
+    }
+  }
+}
+
+// Trigger completion - gather cursor data and send to ISO world
+function triggerCompletion() {
+  const view = getCmView();
+  const state = view.state;
+  const head = state.selection.main.head;
+
+  window.dispatchEvent(
+    new CustomEvent('copilot:complete:response', {
+      detail: {
+        content: {
+          selection: '',
+          before: getContentBeforeCursor(state, head, MAX_LENGTH_BEFORE_CURSOR),
+          after: getContentAfterCursor(state, head, MAX_LENGTH_AFTER_CURSOR),
+        },
+        head,
+      },
+    })
+  );
+}
+
+// Handle "Complete at Cursor" request from menu (ISO world asks main world for cursor data)
+function onMenuComplete() {
+  triggerCompletion();
+}
+
+// Track selection changes and notify ISO world
+function checkSelectionState() {
+  const view = getCmView();
   const state = view.state;
   const from = state.selection.main.from;
   const to = state.selection.main.to;
   const head = state.selection.main.head;
 
   if (from != to) {
-    // Selection is not empty. Show the toolbar;
+    // Has selection - notify ISO world
     if (to - from >= MAX_LENGTH_SELECTION) return;
     window.dispatchEvent(
       new CustomEvent('copilot:editor:select', {
@@ -55,32 +127,34 @@ function onCursorUpdate() {
       })
     );
   } else {
-    // Selection is empty. Show the suggestion.
-    const line = state.doc.lineAt(head);
-    const col = head - line.from;
-    const newLine = line.text.length == 0;
-    if (newLine || (col == line.text.length && line.text[col - 1] == ' ')) {
-      window.dispatchEvent(
-        new CustomEvent('copilot:editor:update', {
-          detail: {
-            content: {
-              selction: '',
-              before: getContentBeforeCursor(state, head, MAX_LENGTH_BEFORE_CURSOR),
-              after: getContentAfterCursor(state, head, MAX_LENGTH_AFTER_CURSOR),
-            },
-            head,
-          },
-        })
-      );
-    }
+    // No selection
+    window.dispatchEvent(
+      new CustomEvent('copilot:cursor:update', {
+        detail: { hasSelection: false },
+      })
+    );
   }
 }
 
+// Debounce selection checking to avoid too many events
+let selectionCheckTimeout: NodeJS.Timeout | null = null;
+function debouncedSelectionCheck() {
+  document.getElementById('copilot-toolbar')?.remove();
+  document.getElementById('copilot-toolbar-editor')?.remove();
+  updateSuggestionOnCursorUpdate();
 
+  if (selectionCheckTimeout) clearTimeout(selectionCheckTimeout);
+  selectionCheckTimeout = setTimeout(() => {
+    checkSelectionState();
+    selectionCheckTimeout = null;
+  }, 300);
+}
+
+// Event listeners
 window.addEventListener('copilot:editor:replace', onReplaceContent as EventListener);
-window.addEventListener('cursor:editor:update', debounce(onCursorUpdate));
+window.addEventListener('copilot:menu:complete', onMenuComplete);
 
-// REVIEW: This isn't ideal, need to investigate what was changed.
+// Setup keydown listener for Tab/Arrow shortcuts and configurable completion shortcut
 const setupKeydownListener = (n: number) => {
   if (n <= 0) return true;
   const editor = document.querySelector('.cm-content');
@@ -94,6 +168,7 @@ const setupKeydownListener = (n: number) => {
 
 setupKeydownListener(10);
 
+// Hook into CodeMirror dispatch to track selection changes (not for auto-triggering)
 const hookCmDispatch = (n: number) => {
   if (n <= 0) return;
   const editor = document.querySelector('.cm-content') as any;
@@ -105,7 +180,8 @@ const hookCmDispatch = (n: number) => {
   const originalDispatch = view.dispatch;
   view.dispatch = (...args: any[]) => {
     originalDispatch.apply(view, args);
-    window.dispatchEvent(new CustomEvent('cursor:editor:update'));
+    // Only check selection state, don't auto-trigger suggestions
+    debouncedSelectionCheck();
   };
   console.log('Overleaf Copilot: Hooked into CodeMirror dispatch');
 };

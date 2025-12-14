@@ -168,8 +168,9 @@ const OptionsForm = () => {
         }
       });
       if (response.ok) {
-        setMessage({ text: 'Success! Connection verified.', type: 'success' });
         setConnectionStatus({ text: 'Success!', type: 'success' });
+        // Auto-refresh models on successful connection
+        await fetchModels();
       } else {
         setMessage({ text: `Failed: ${response.status} ${response.statusText}`, type: 'error' });
         setConnectionStatus({ text: 'Failed', type: 'error' });
@@ -299,7 +300,7 @@ const OptionsForm = () => {
           </div>
           <div class="pure-control-group">
             <label for="field-api-key">OpenAI API Key</label>
-            <input type="password" id="field-api-key" required disabled={!!state.apiBaseUrl && !state.apiKey}
+            <input type="password" id="field-api-key" required
               value={state.apiKey || ''} placeholder="sk-..." class="pure-input-1-3"
               onInput={(e: any) => onOptionsChange({ ...state, apiKey: e.currentTarget.value })} />
             <span class="pure-form-message-inline">Required for all features.</span>
@@ -378,9 +379,15 @@ const OptionsForm = () => {
 
           <h2>Suggestion</h2>
           <div class="pure-u-3-4">
-            <p>This section customizes how suggestions work. Suggestions are triggered when you type a space at the end of a
-              line or press Enter to start a new line. To accept a suggestion, press Tab to insert the entire text,
-              or use Ctrl/Command + right arrow to insert it word by word.</p>
+            <p>Configure AI-powered completions. Click the Copilot menu or use your keyboard shortcut to trigger completion at the cursor.
+              To accept a suggestion, press Tab to insert the entire text, or use Ctrl/Cmd + right arrow to insert word by word.</p>
+          </div>
+          <div class="pure-control-group">
+            <label for="field-completion-shortcut">Keyboard Shortcut</label>
+            <input class="pure-input-1-4" type="text" id="field-completion-shortcut"
+              placeholder="Ctrl+Space" value={state.completionShortcut || ''}
+              onChange={(e) => onOptionsChange({ ...state, completionShortcut: e.currentTarget.value })} />
+            <span class="pure-form-message-inline pure-u-1-3">Shortcut to trigger completion (e.g., Ctrl+Space, Alt+C). Leave empty to disable.</span>
           </div>
           <div class="pure-control-group">
             <label for="field-suggestion-max-output-token">Max output token</label>

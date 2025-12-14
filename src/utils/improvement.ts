@@ -87,5 +87,5 @@ function buildImprovePrompt(content: TextContent, template: string) {
     return renderPrompt(template, content);
   }
 
-  return `Rewrite and improve the following content:\n` + `${content.selection}`;
+  return `Rewrite and improve the following LaTeX content. Output ONLY valid LaTeX code, no markdown or explanations:\n` + `${content.selection}`;
 }

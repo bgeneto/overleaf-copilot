@@ -5,15 +5,17 @@ import 'purecss/build/pure-min.css';
 import { getImprovementStream } from "../utils/improvement";
 import * as Diff from 'diff';
 import { EditorSelectionData, Options } from "../types";
+import { X } from 'lucide-preact';
 
 interface ToolbarEditorProps {
   data: EditorSelectionData,
   action: { name: string, prompt: string, icon: string },
   options: Options,
-  signal: AbortSignal
+  signal: AbortSignal,
+  onClose?: () => void
 }
 
-export const ToolbarEditor = ({ data, action, signal, options }: ToolbarEditorProps) => {
+export const ToolbarEditor = ({ data, action, signal, options, onClose }: ToolbarEditorProps) => {
   const [loading, setLoading] = useState(false);
   const [content, setContent] = useState("");
   const [showDiff, setShowDiff] = useState(false);
@@ -51,6 +53,13 @@ export const ToolbarEditor = ({ data, action, signal, options }: ToolbarEditorPr
         },
       })
     );
+    // Close after replacing
+    handleClose();
+  }
+
+  const handleClose = () => {
+    document.getElementById('copilot-toolbar-editor')?.remove();
+    onClose?.();
   }
 
   const onToggleDiff = () => {
@@ -68,7 +77,9 @@ export const ToolbarEditor = ({ data, action, signal, options }: ToolbarEditorPr
 
   return <div class="toolbar-editor-container">
     <div class="pure-g toolbar-editor-header">
-      <span class="pure-u-1-4">Action: {action.name ?? "Rewrite"}</span>
+      <span class="pure-u-1-4">
+        Action: {action.name ?? "Rewrite"}
+      </span>
       <span class="pure-u-3-4 toolbar-editor-header-actions">
         <a href="#" className={loading ? "disabled toolbar-editor-action" : "toolbar-editor-action"} onClick={onToggleDiff}>
           <span><Icon name={showDiff ? "circle-check" : "circle"} size={18} /></span>
@@ -81,6 +92,9 @@ export const ToolbarEditor = ({ data, action, signal, options }: ToolbarEditorPr
         <a href="#" className={loading ? "disabled toolbar-editor-action" : "toolbar-editor-action"} onClick={onReplace}>
           <span><Icon name="replace" size={18} /></span>
           <span>Replace</span>
+        </a>
+        <a href="#" className="toolbar-editor-action toolbar-editor-close" onClick={(e) => { e.preventDefault(); handleClose(); }} title="Close">
+          <span><X size={18} /></span>
         </a>
       </span>
     </div >

@@ -89,17 +89,31 @@ similar: 'src/components/FindSimilarPage.tsx'    // Similar papers view
 
 ### Event Handling
 
-Debouncing pattern (500ms) on cursor updates:
+Debouncing and throttling pattern (800ms) on cursor updates:
 ```typescript
+// State tracking flags
+let isTyping = false;      // Prevents dispatch events during active typing
+let isGenerating = false;  // Prevents overlapping API requests
+
 const debounce = (func) => {
   let timeout;
   return () => {
+    isTyping = true;  // Mark as typing
     window.dispatchEvent(new CustomEvent('copilot:cursor:update')); // Abort ongoing requests
     if (timeout) clearTimeout(timeout);
-    timeout = setTimeout(func, 500);
+    timeout = setTimeout(() => {
+      isTyping = false;
+      func();
+    }, 800);
   };
 };
 ```
+
+**Suggestion trigger conditions:**
+- Minimum 50 characters of content before cursor
+- Cursor at end of line after space, OR on empty line
+- Line does not start with `%` (LaTeX comment)
+- No active typing or generation in progress
 
 ### Content Replacement Strategy
 
@@ -115,17 +129,24 @@ Stored in `chrome.storage` with key `LOCAL_STORAGE_KEY_OPTIONS`:
 
 ```typescript
 {
-  apiKey?: string;           // OpenAI API key
-  apiBaseUrl?: string;       // Custom base URL (for proxies)
+  apiKey?: string;           // OpenAI API key (encrypted/obfuscated)
+  apiBaseUrl?: string;       // Custom base URL (default: 'https://api.openai.com/v1')
   model?: string;            // Default: 'gpt-3.5-turbo'
   suggestionMaxOutputToken?: number;  // Default: 500
-  suggestionPrompt?: string; // Custom system prompt
+  suggestionPrompt?: string; // Custom system prompt with placeholders
   suggestionDisabled?: boolean;
   toolbarActions?: ToolbarAction[];  // Custom toolbar buttons
   toolbarSearchDisabled?: boolean;
   toolbarDisabled?: boolean;
+  embeddingModel?: string;   // For "Find Similar" feature
+  customDomains?: string[];  // Additional domains to inject into
 }
 ```
+
+**Custom prompt placeholders:**
+- `{{before}}`, `{{after}}`, `{{selection}}` – Full content
+- `{{before[-1000:]}}` – Slice syntax for last N characters
+- `<input>` – Legacy, replaced with last 1000 chars of before
 
 Access via `getOptions()` from `src/utils/helper.ts`.
 

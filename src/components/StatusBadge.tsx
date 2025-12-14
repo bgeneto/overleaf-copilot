@@ -1,47 +1,90 @@
 import { h } from 'preact';
-import { Bot, Check } from 'lucide-preact';
-import { useState, useEffect } from 'preact/hooks';
+import { Bot, Sparkles, Pencil, Search, Settings, Loader } from 'lucide-preact';
+import { useState, useEffect, useRef } from 'preact/hooks';
+import './styles/StatusBadge.css';
 
-export const StatusBadge = () => {
-    const [active, setActive] = useState(true);
+interface StatusBadgeProps {
+    onComplete: () => void;
+    onImprove: () => void;
+    onSearch: () => void;
+    hasSelection: boolean;
+    isLoading: boolean;
+}
+
+export const StatusBadge = ({ onComplete, onImprove, onSearch, hasSelection, isLoading }: StatusBadgeProps) => {
+    const [menuOpen, setMenuOpen] = useState(false);
+    const ref = useRef<HTMLDivElement>(null);
+
+    // Close menu when clicking outside
+    useEffect(() => {
+        const handleClickOutside = (e: MouseEvent) => {
+            if (ref.current && !ref.current.contains(e.target as Node)) {
+                setMenuOpen(false);
+            }
+        };
+        document.addEventListener('mousedown', handleClickOutside);
+        return () => document.removeEventListener('mousedown', handleClickOutside);
+    }, []);
+
+    const handleComplete = () => {
+        setMenuOpen(false);
+        onComplete();
+    };
+
+    const handleImprove = () => {
+        if (!hasSelection) return;
+        setMenuOpen(false);
+        onImprove();
+    };
+
+    const handleSearch = () => {
+        if (!hasSelection) return;
+        setMenuOpen(false);
+        onSearch();
+    };
+
+    const handleSettings = () => {
+        setMenuOpen(false);
+        chrome.runtime.sendMessage({ type: 'open-options' });
+    };
 
     return (
-        <div style={{
-            position: 'fixed',
-            bottom: '10px',
-            right: '10px',
-            zIndex: 9999,
-            backgroundColor: '#f8f9fa',
-            border: '1px solid #e9ecef',
-            borderRadius: '20px',
-            padding: '5px 10px',
-            display: 'flex',
-            alignItems: 'center',
-            gap: '6px',
-            boxShadow: '0 2px 5px rgba(0,0,0,0.1)',
-            fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif',
-            fontSize: '12px',
-            color: '#495057',
-            transition: 'opacity 0.3s ease',
-            opacity: active ? 1 : 0.5,
-            cursor: 'default',
-            userSelect: 'none'
-        }}
-            title="Overleaf Copilot is active"
-        >
-            <div style={{
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                backgroundColor: '#28a745',
-                borderRadius: '50%',
-                width: '18px',
-                height: '18px',
-                color: 'white'
-            }}>
-                <Bot size={12} />
+        <div class="copilot-status-badge" ref={ref}>
+            {menuOpen && (
+                <div class="copilot-status-menu">
+                    <div class="copilot-status-menu-item" onClick={handleComplete}>
+                        <div class="copilot-status-menu-item-icon complete">
+                            <Sparkles size={14} />
+                        </div>
+                        <span class="copilot-status-menu-item-text">Complete at Cursor</span>
+                    </div>
+                    <div class={`copilot-status-menu-item ${!hasSelection ? 'disabled' : ''}`} onClick={handleImprove} title={!hasSelection ? 'Select text first' : ''}>
+                        <div class="copilot-status-menu-item-icon improve">
+                            <Pencil size={14} />
+                        </div>
+                        <span class="copilot-status-menu-item-text">Improve Selection</span>
+                    </div>
+                    <div class={`copilot-status-menu-item ${!hasSelection ? 'disabled' : ''}`} onClick={handleSearch} title={!hasSelection ? 'Select text first' : ''}>
+                        <div class="copilot-status-menu-item-icon search">
+                            <Search size={14} />
+                        </div>
+                        <span class="copilot-status-menu-item-text">Find Similar Papers</span>
+                    </div>
+                    <div class="copilot-status-menu-divider" />
+                    <div class="copilot-status-menu-item" onClick={handleSettings}>
+                        <div class="copilot-status-menu-item-icon settings">
+                            <Settings size={14} />
+                        </div>
+                        <span class="copilot-status-menu-item-text">Settings</span>
+                    </div>
+                </div>
+            )}
+            <div class="copilot-status-badge-button" onClick={() => setMenuOpen(!menuOpen)} title="Overleaf Copilot Menu">
+                <div class={`copilot-status-badge-icon ${isLoading ? 'loading' : ''}`}>
+                    {isLoading ? <Loader size={12} /> : <Bot size={12} />}
+                </div>
+                <span class="copilot-status-badge-text">{isLoading ? 'Working...' : 'Copilot'}</span>
             </div>
-            <span style={{ fontWeight: 600 }}>Copilot On</span>
         </div>
     );
 };
