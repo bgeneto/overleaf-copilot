@@ -5,7 +5,7 @@ import {
   DEFAULT_MODEL,
   DEFAULT_SUGGESTION_MAX_OUTPUT_TOKEN
 } from '../constants';
-import { postProcessToken, renderPrompt } from './helper';
+import { buildImprovePrompt } from '../prompts';
 import { Options, TextContent, StreamChunk } from '../types';
 
 
@@ -84,15 +84,4 @@ export async function* getImprovementStream(content: TextContent, prompt: string
       yield { kind: "error", content: "An error occurred while generating the content.\n" + error };
     }
   }
-}
-
-function buildImprovePrompt(content: TextContent, template: string) {
-  if (!!template) {
-    if (template.indexOf('<input>') >= 0)
-      return template.replace('<input>', content.selection);
-
-    return renderPrompt(template, content);
-  }
-
-  return `Rewrite and improve the following LaTeX content. Output ONLY valid LaTeX code, no markdown or explanations:\n` + `${content.selection}`;
 }

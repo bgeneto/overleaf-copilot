@@ -1,0 +1,204 @@
+'use strict';
+
+import { TextContent, ToolbarAction } from './types';
+import { renderPrompt } from './utils/helper';
+
+/**
+ * Centralized prompt templates for all LLM interactions.
+ * Each prompt is designed for a specific use case and follows consistent formatting.
+ */
+export const PROMPTS = {
+    /**
+     * Prompt for "Complete at Cursor" feature.
+     * Used when the user wants the LLM to continue writing from the current position.
+     */
+    COMPLETION: `You are a LaTeX writing companion and content continuation expert. Continue writing from where the text below ends, maintaining the same topic, argument flow, writing style, tone, and language. Output ONLY the continuation text with proper LaTeX syntax and zero commentary.
+
+### Text to be continued ###
+{{contextContent}}
+### End of text ###
+
+RULES:
+
+- No explanations, comments, or descriptions
+- No code fences, markdown formatting, backticks, or preambles (no \`latex or \` anywhere)
+- No "Here is the continuation..." or "I will continue..." text
+- Output pure LaTeX code starting immediately with the continuation
+- Detect and match the language automatically
+
+CONTINUATION REQUIREMENTS:
+
+- Semantic coherence: Continue the exact topic, argument, or narrative in progress
+- Logical flow: Build naturally on the last sentence/paragraph without repetition
+- Style matching: Mirror sentence structure complexity, vocabulary level, formality, voice (active/passive), paragraph length patterns
+- Tone consistency: Match academic/technical/casual/creative tone as established
+- Argument structure: If presenting a thesis, continue supporting it; if listing, continue the pattern; if explaining, deepen the explanation
+- Natural transitions: No artificial restarts or topic shifts
+
+PRESERVE AND CONTINUE:
+
+- LaTeX environments: If in \\begin{itemize}, continue with \\item; if in equation, continue mathematical development
+- Numbering/labeling patterns: Match existing \\section, \\subsection, figure, table, equation numbering conventions
+- Citation style: Continue using \\cite{} as established in the text
+- Mathematical notation: Use consistent symbols, operators, and formatting for equations
+- Technical terminology: Maintain established vocabulary and definitions
+- All LaTeX syntax: Proper $... $ for inline math, \\[...\\] or environments for display math, correct table/figure formatting
+
+DETECT FROM CONTEXT (if possible):
+
+- Document type (paper, thesis, article, book, notes, etc.)
+- Current section purpose (introduction, methodology, results, discussion, conclusion, etc.)
+- Whether mid-sentence, mid-paragraph, or ready for new paragraph
+- Language and regional conventions
+
+Write 1-3 paragraphs (or appropriate length based on context) that feel like a seamless continuation by the original author.`,
+
+    /**
+     * Prompt for "Improve Writing" action.
+     * Used to enhance grammar, fluency, and style while preserving LaTeX syntax.
+     */
+    IMPROVE: `You are a LaTeX content editor and native writing expert. Improve the TEXT below by fixing grammar errors and enhancing fluency to native-speaker quality in whatever language is present, while preserving all LaTeX syntax. Output ONLY the corrected LaTeX code with zero commentary.
+
+TEXT:
+
+{{selection}}
+
+RULES:
+
+- No explanations, comments, or descriptions
+- No code fences, markdown formatting, backticks, or preambles (no \`latex or \` anywhere)
+- No "Here is..." or "I improved..." text
+- Output pure LaTeX code starting immediately with the corrected content
+- Detect the language automatically and apply native-speaker corrections for that language
+
+CORRECTIONS TO MAKE:
+
+- Grammar: Fix verb conjugations, tense consistency, article usage, prepositions, agreement (gender/number), sentence structure, fragments, run-ons
+- Fluency: Improve word choice, sentence flow, natural phrasing, idiomatic expressions, transitions between ideas, collocations
+- Clarity: Remove awkward constructions, redundancy, ambiguity, literal translations
+- Appropriate tone: Maintain formality and precision suitable for the document type and language conventions
+
+PRESERVE EXACTLY:
+
+- All LaTeX commands, environments, math mode content
+- Technical terms, citations, references, labels
+- Document structure and formatting
+- Intended meaning and argument structure
+- All \\begin{}, \\end{}, $... $, equations, tables, figures, \\cite{}, etc.
+- Language mixing where intentional (e.g., English terms in non-English academic text)
+
+Return native-quality text in the original language(s) with perfect LaTeX syntax.`,
+
+    /**
+     * Prompt for "Fix LaTeX" action.
+     * Used to fix LaTeX syntax and compilation errors.
+     */
+    FIX_LATEX: `You are a LaTeX syntax correction tool. Fix all compilation errors in the LaTeX code below. Output ONLY the corrected LaTeX code with zero commentary.
+
+LaTeX:
+
+{{selection}}
+
+RULES:
+
+- No explanations, comments, or descriptions
+- No code fences, markdown formatting, or preambles
+- No "Here is..." or "I fixed..." text
+- Preserve all content exactly as intended
+- Fix only syntax errors: unclosed environments (\\begin without \\end), bracket mismatches ({[()]}), unclosed math delimiters like $, $$, \\[ \\], \\( \\), table syntax errors (column specs, \\\\, &), malformed \\includegraphics or \\caption, unescaped special characters (&%$#_{}~^\\), missing command arguments, any other LaTeX compilation errors
+
+Return pure LaTeX code starting immediately with the corrected content.`,
+
+    /**
+     * Default fallback prompt for improvement when no custom prompt is provided.
+     */
+    DEFAULT_IMPROVE_FALLBACK: `Rewrite and improve the following LaTeX content. Output ONLY valid LaTeX code, no markdown or explanations:
+
+{{selection}}`
+} as const;
+
+/**
+ * Built-in toolbar actions with their associated prompts.
+ */
+export const BUILTIN_ACTIONS = {
+    /**
+     * Action for improving writing quality.
+     */
+    IMPROVE: {
+        name: 'Improve',
+        prompt: PROMPTS.IMPROVE,
+        icon: 'pencil',
+        onClick: 'show_editor'
+    } as ToolbarAction,
+
+    /**
+     * Action for fixing LaTeX syntax errors.
+     */
+    FIX: {
+        name: 'Fix LaTeX',
+        prompt: PROMPTS.FIX_LATEX,
+        icon: 'wrench',
+        onClick: 'show_editor'
+    } as ToolbarAction,
+
+    /**
+     * Action for completing text at cursor position.
+     */
+    COMPLETE: {
+        name: 'Complete at Cursor',
+        prompt: '', // Will be built dynamically based on context
+        icon: 'sparkles',
+        onClick: 'show_editor',
+        isCompletion: true  // Use buildCompletionPrompt instead of buildImprovePrompt
+    } as ToolbarAction
+} as const;
+
+/**
+ * Builds the completion prompt based on the current text content.
+ * 
+ * @param content - The text content containing before, after, and selection
+ * @param customTemplate - Optional custom template provided by user settings
+ * @returns The formatted prompt string ready to send to the LLM
+ */
+export function buildCompletionPrompt(content: TextContent, customTemplate?: string): string {
+    // Check if there's selected text - if so, continue from the selection directly
+    const hasSelection = content.selection && content.selection.trim().length > 0;
+
+    // Handle custom templates
+    if (customTemplate) {
+        if (customTemplate.indexOf('<input>') >= 0) {
+            // Use selection if available, otherwise use before content
+            const inputContent = hasSelection ? content.selection : content.before.slice(-1000);
+            return customTemplate.replace('<input>', inputContent);
+        }
+
+        return renderPrompt(customTemplate, content);
+    }
+
+    // Determine the content to use as context
+    const contextContent = hasSelection ? content.selection : content.before.slice(-1000);
+
+    // Build the prompt by replacing placeholder
+    return PROMPTS.COMPLETION
+        .replace(/\{\{contextContent\}\}/g, contextContent);
+}
+
+/**
+ * Builds the improvement prompt based on the current text content.
+ * 
+ * @param content - The text content containing the selection to improve
+ * @param template - The prompt template to use
+ * @returns The formatted prompt string ready to send to the LLM
+ */
+export function buildImprovePrompt(content: TextContent, template: string): string {
+    if (template) {
+        if (template.indexOf('<input>') >= 0) {
+            return template.replace('<input>', content.selection);
+        }
+
+        return renderPrompt(template, content);
+    }
+
+    // Use fallback prompt
+    return PROMPTS.DEFAULT_IMPROVE_FALLBACK.replace('{{selection}}', content.selection);
+}

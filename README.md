@@ -58,7 +58,7 @@ After installing the extension:
    |---------|---------|-------------|
    | API Base URL | `https://api.openai.com/v1` | Change for custom providers |
    | Model | `gpt-3.5-turbo` | GPT model to use |
-   | Max Output Tokens | `500` | Maximum length of suggestions |
+   | Max Output Tokens | `1024` | Maximum length of suggestions |
    | Custom Prompt | (built-in) | Your own prompt template |
 
 4. **Test Connection**: Click "Test Connection" to verify your API key works
@@ -130,7 +130,7 @@ Discover related research based on your document content:
 | `API Key` | string | — | Your OpenAI API key (required) |
 | `API Base URL` | string | `https://api.openai.com/v1` | Base URL for API requests |
 | `Model` | string | `gpt-3.5-turbo` | Model ID to use for completions |
-| `Max Output Tokens` | number | `500` | Maximum tokens in AI response |
+| `Max Output Tokens` | number | `1024` | Maximum tokens in AI response |
 | `Suggestion Prompt` | string | (built-in) | Custom prompt template |
 | `Disable Suggestions` | boolean | `false` | Turn off auto-completion |
 | `Disable Toolbar` | boolean | `false` | Turn off selection toolbar |

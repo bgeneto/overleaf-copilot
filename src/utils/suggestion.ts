@@ -5,7 +5,7 @@ import {
   DEFAULT_SUGGESTION_MAX_OUTPUT_TOKEN,
   DEFAULT_MODEL,
 } from '../constants';
-import { postProcessToken, renderPrompt } from './helper';
+import { buildCompletionPrompt } from '../prompts';
 import { Options, StreamChunk, TextContent } from '../types';
 
 
@@ -27,7 +27,7 @@ export async function* getSuggestion(content: TextContent, signal: AbortSignal, 
     });
 
     try {
-      const promptContent = buildSuggestionPrompt(content, options.suggestionPrompt);
+      const promptContent = buildCompletionPrompt(content, options.suggestionPrompt);
 
       const stream = await openai.chat.completions.create(
         {
@@ -54,21 +54,4 @@ export async function* getSuggestion(content: TextContent, signal: AbortSignal, 
       yield { kind: "error", content: "An error occurred while generating the content.\n" + error };
     }
   }
-}
-
-function buildSuggestionPrompt(content: TextContent, template: string | undefined) {
-  if (!!template) {
-    if (template.indexOf('<input>') >= 0)
-      return template.replace('<input>', content.before.slice(-1000));
-
-    return renderPrompt(template, content);
-  }
-
-  return (
-    `Continue ${content.before.endsWith('\n') ? '' : 'the last paragraph of '}the academic paper in LaTeX below, ` +
-    `making sure to maintain semantic continuity.\n\n` +
-    `### Beginning of the paper ###\n` +
-    `${content.before.slice(-1000)}\n` +
-    `### End of the paper ###`
-  );
 }

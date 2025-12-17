@@ -436,36 +436,14 @@ const OptionsForm = () => {
           </div>
           <div class="pure-control-group">
             <label for="field-suggestion-max-output-token">Max output token</label>
-            <input class="pure-input-1-4" type="number" id="field-suggestion-max-output-token" placeholder="500" value={state.suggestionMaxOutputToken}
+            <input class="pure-input-1-4" type="number" id="field-suggestion-max-output-token" placeholder="1024" value={state.suggestionMaxOutputToken}
               onChange={(e) => onOptionsChange({ ...state, suggestionMaxOutputToken: parseInt(e.currentTarget.value) })} />
-            <span class="pure-form-message-inline pure-u-1-3">Set the maximum number of tokens generated per suggestion. Default is 500.</span>
-          </div>
-          <div class="pure-control-group">
-            <label for="field-suggestion-prompt">Prompt</label>
-            <textarea style="height: 9em" class="pure-input-1-4" id="field-suggestion-prompt"
-              placeholder="Continue the academic paper in LaTeX below, making sure to maintain semantic continuity. Do NOT use markdown.&#10;&#10;### Beginning of the paper ###&#10;{{before[-1000:]}}&#10;### End of the paper ###"
-              value={state.suggestionPrompt}
-              onChange={(e) => onOptionsChange({ ...state, suggestionPrompt: e.currentTarget.value })} />
-            <span class="pure-form-message-inline pure-u-1-3">
-              <span>
-                Available variables are:<br /><br />
-                <b>before</b>: Text before the cursor (max 5000 chars).<br />
-                <b>after</b>: Text after the cursor (max 5000 chars).<br /><br />
-                Add variables in the template using a Jinja like format, e.g. <code>&#123;&#123; before[-1000:] &#125;&#125;</code>.
-              </span>
-            </span>
-          </div>
-          <div class="pure-controls">
-            <label for="field-suggestion-diabled" class="pure-checkbox">
-              <input type="checkbox" id="field-suggestion-diabled" checked={state.suggestionDisabled}
-                onChange={(e) => onOptionsChange({ ...state, suggestionDisabled: e.currentTarget.checked })} /> Disable
-            </label>
-            <span class="pure-form-message-inline pure-u-1-3">Disable the suggestion feature.</span>
+            <span class="pure-form-message-inline pure-u-1-3">Set the maximum number of tokens generated per suggestion. Default is 1024.</span>
           </div>
 
           <h2>Toolbar</h2>
           <div class="pure-u-3-4">
-            <p>This section customizes how the toolbar works. You can add and customize multiple actions. It's triggered when you select a piece of text in the editor.</p>
+            <p>Use this section to add new options/actions to the toolbar menu. You can add and customize multiple actions. These actions are shown when you select a piece of text in the editor and click on the toolbar.</p>
           </div>
           {
             state.toolbarActions?.map((action, index) => (

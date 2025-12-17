@@ -35,6 +35,7 @@ export interface ToolbarAction {
   prompt: string,
   icon: string,
   onClick: "replace" | "show_editor",
+  isCompletion?: boolean,  // When true, use completion prompt builder instead of improvement
 }
 
 export interface Options {
