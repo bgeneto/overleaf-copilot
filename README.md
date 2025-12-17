@@ -1,7 +1,7 @@
 # <img src="public/icons/icon_48.png" width="45" align="left"> AI Agent for Overleaf
 
-[![Chrome Web Store](https://img.shields.io/chrome-web-store/v/pcmffklbilmgckfkbncpoffmicdpfkmm?label=Chrome)](https://chrome.google.com/webstore/detail/overleaf-copilot/pcmffklbilmgckfkbncpoffmicdpfkmm)
-[![Edge Add-on](https://img.shields.io/badge/Edge-Add--on-blue)](https://microsoftedge.microsoft.com/addons/detail/overleaf-copilot/dgbgphmgphkibogcjhjhdmkjphejcead)
+[![Chrome Web Store](https://img.shields.io/chrome-web-store/v/pcmffklbilmgckfkbncpoffmicdpfkmm?label=Chrome)](https://chrome.google.com/webstore/detail/ai-agent-for-overleaf/pcmffklbilmgckfkbncpoffmicdpfkmm)
+[![Edge Add-on](https://img.shields.io/badge/Edge-Add--on-blue)](https://microsoftedge.microsoft.com/addons/detail/ai-agent-for-overleaf/dgbgphmgphkibogcjhjhdmkjphejcead)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
 **AI-powered code completion and text enhancement for the [Overleaf](https://www.overleaf.com) LaTeX editor.**
@@ -29,8 +29,8 @@ Discover related research on arXiv based on your selected text. Great for litera
 
 | Browser | Link |
 |---------|------|
-| **Google Chrome** | [Chrome Web Store](https://chrome.google.com/webstore/detail/overleaf-copilot/pcmffklbilmgckfkbncpoffmicdpfkmm) |
-| **Microsoft Edge** | [Edge Add-ons](https://microsoftedge.microsoft.com/addons/detail/overleaf-copilot/dgbgphmgphkibogcjhjhdmkjphejcead) |
+| **Google Chrome** | [Chrome Web Store](https://chrome.google.com/webstore/detail/ai-agent-for-overleaf/pcmffklbilmgckfkbncpoffmicdpfkmm) |
+| **Microsoft Edge** | [Edge Add-ons](https://microsoftedge.microsoft.com/addons/detail/ai-agent-for-overleaf/dgbgphmgphkibogcjhjhdmkjphejcead) |
 
 ### Manual Installation (Development)
 
@@ -270,7 +270,7 @@ npm run format
 ### Project Structure
 
 ```
-overleaf-copilot/
+ai-agent-for-overleaf/
 ├── src/
 │   ├── main/           # Main world content script (CodeMirror access)
 │   ├── iso/            # Isolated world content script (API calls)

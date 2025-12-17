@@ -310,7 +310,7 @@ const OptionsForm = () => {
           <div class="pure-u-3-4">
             <p>
               For any issues or feature requests, visit:
-              <a target="_blank" href="https://github.com/bgeneto/overleaf-copilot/issues">https://github.com/bgeneto/overleaf-copilot/issues</a>.
+              <a target="_blank" href="https://github.com/bgeneto/ai-agent-for-overleaf/issues">https://github.com/bgeneto/ai-agent-for-overleaf/issues</a>.
             </p>
           </div>
           <div class="pure-control-group">

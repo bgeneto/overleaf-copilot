@@ -44,7 +44,7 @@ Custom events bridge the two worlds:
 ```bash
 npm run watch   # Development build with source maps, auto-rebuild on changes
 npm run build   # Production build (no source maps)
-npm run pack    # Creates release/overleaf-copilot-v{version}.zip from build/
+npm run pack    # Creates release/ai-agent-for-overleaf-v{version}.zip from build/
 npm run repack  # build + pack combined
 ```
 
