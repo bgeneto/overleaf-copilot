@@ -275,9 +275,7 @@ export function buildContinuationPrompt(content: TextContent, customTemplate?: s
 
 /**
  * Builds the improvement prompt based on the current text content.
- * 
- * For user-defined custom toolbar actions with simple prompts (like "Translate to pt-BR"),
- * this function automatically wraps them with proper LaTeX context using CUSTOM_ACTION_WRAPPER.
+ * This function does simple variable substitution without any wrapping logic.
  * 
  * @param content - The text content containing the selection to improve
  * @param template - The prompt template to use
@@ -290,25 +288,26 @@ export function buildImprovePrompt(content: TextContent, template: string): stri
             return template.replace('<input>', content.selection);
         }
 
-        // First, render the template with variable substitution ({{selection}}, {{before}}, {{after}})
-        const renderedPrompt = renderPrompt(template, content);
-
-        // Check if this is a "simple" user prompt that needs wrapping with LaTeX context.
-        // Built-in prompts already contain comprehensive rules (they have "RULES:" sections).
-        // User prompts typically don't have these structured sections.
-        const isBuiltInOrComprehensive =
-            renderedPrompt.includes('RULES:') ||
-            renderedPrompt.includes('PRESERVE') ||
-            renderedPrompt.includes('No explanations, comments');
-
-        if (!isBuiltInOrComprehensive) {
-            // Wrap simple user prompt with LaTeX context
-            return PROMPTS.CUSTOM_ACTION_WRAPPER.replace('{{userPrompt}}', renderedPrompt);
-        }
-
-        return renderedPrompt;
+        // Render the template with variable substitution ({{selection}}, {{before}}, {{after}})
+        return renderPrompt(template, content);
     }
 
     // Use fallback prompt
     return PROMPTS.DEFAULT_IMPROVE_FALLBACK.replace('{{selection}}', content.selection);
+}
+
+/**
+ * Builds the prompt for user-defined custom toolbar actions.
+ * Always wraps the user's simple prompt with CUSTOM_ACTION_WRAPPER for proper LaTeX context.
+ * 
+ * @param content - The text content containing the selection
+ * @param userPrompt - The user's custom prompt template
+ * @returns The formatted prompt string wrapped with LaTeX context
+ */
+export function buildCustomActionPrompt(content: TextContent, userPrompt: string): string {
+    // First, render the user's template with variable substitution
+    const renderedUserPrompt = renderPrompt(userPrompt, content);
+
+    // Wrap with CUSTOM_ACTION_WRAPPER for proper LaTeX context
+    return PROMPTS.CUSTOM_ACTION_WRAPPER.replace('{{userPrompt}}', renderedUserPrompt);
 }

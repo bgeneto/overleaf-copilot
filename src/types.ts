@@ -36,6 +36,7 @@ export interface ToolbarAction {
   icon: string,
   onClick: "replace" | "show_editor",
   isContinuation?: boolean,  // When true, use continuation prompt builder instead of improvement
+  isCustomAction?: boolean,  // When true, wrap with CUSTOM_ACTION_WRAPPER (user-defined actions)
 }
 
 export interface Options {

@@ -57,7 +57,7 @@ export const Toolbar = ({ data, actions, searchDisabled, onShowEditor, onClickSe
 
     if (action.onClick === "replace") {
       setLoading(true);
-      const content = await getImprovement(data.content, action.prompt, options, signal);
+      const content = await getImprovement(data.content, action.prompt, options, signal, action.isCustomAction);
       setLoading(false);
 
       if (signal.aborted) return;

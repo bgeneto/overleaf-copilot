@@ -45,7 +45,7 @@ function createCrossContextEvent(eventName: string, detail: any): CustomEvent {
 
 interface ToolbarEditorProps {
   data: EditorSelectionData,
-  action: { name: string, prompt: string, icon: string, onClick?: string, isContinuation?: boolean },
+  action: { name: string, prompt: string, icon: string, onClick?: string, isContinuation?: boolean, isCustomAction?: boolean },
   options: Options,
   signal: AbortSignal,
   onClose?: () => void
@@ -112,10 +112,10 @@ export const ToolbarEditor = ({ data, action, signal, options, onClose }: Toolba
     setLoading(true);
     try {
       // Use getSuggestion for continuation actions (uses buildContinuationPrompt)
-      // Use getImprovementStream for regular improvement actions (uses buildImprovePrompt)
+      // Use getImprovementStream for regular improvement actions (uses buildImprovePrompt or buildCustomActionPrompt)
       const stream = action.isContinuation
         ? getSuggestion(data.content, signal, options)
-        : getImprovementStream(data.content, action.prompt, options, signal);
+        : getImprovementStream(data.content, action.prompt, options, signal, action.isCustomAction);
 
       for await (const chunk of stream) {
         setContent((prev) => prev + chunk.content);

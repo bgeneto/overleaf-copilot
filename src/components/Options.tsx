@@ -60,7 +60,7 @@ const OptionsForm = () => {
 
   const onAddAction = () => {
     const toolbarActions = state.toolbarActions ?? [];
-    toolbarActions.push({ name: '', prompt: '', icon: '', onClick: 'show_editor' });
+    toolbarActions.push({ name: '', prompt: '', icon: '', onClick: 'show_editor', isCustomAction: true });
     onOptionsChange({ ...state, toolbarActions });
   };
 

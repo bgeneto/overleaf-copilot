@@ -5,13 +5,13 @@ import {
   DEFAULT_MODEL,
   DEFAULT_SUGGESTION_MAX_OUTPUT_TOKEN
 } from '../constants';
-import { buildImprovePrompt } from '../prompts';
+import { buildImprovePrompt, buildCustomActionPrompt } from '../prompts';
 import { Options, TextContent, StreamChunk } from '../types';
 
 
-export async function getImprovement(content: TextContent, prompt: string, options: Options, signal: AbortSignal) {
+export async function getImprovement(content: TextContent, prompt: string, options: Options, signal: AbortSignal, isCustomAction?: boolean) {
   let fullContent = "";
-  const stream = getImprovementStream(content, prompt, options, signal);
+  const stream = getImprovementStream(content, prompt, options, signal, isCustomAction);
   for await (const chunk of stream) {
     if (chunk.kind === 'token') {
       fullContent += chunk.content;
@@ -22,7 +22,7 @@ export async function getImprovement(content: TextContent, prompt: string, optio
   return fullContent;
 }
 
-export async function* getImprovementStream(content: TextContent, prompt: string, options: Options, signal: AbortSignal):
+export async function* getImprovementStream(content: TextContent, prompt: string, options: Options, signal: AbortSignal, isCustomAction?: boolean):
   AsyncGenerator<StreamChunk, void, unknown> {
 
   if (!options.apiKey) {
@@ -33,7 +33,10 @@ export async function* getImprovementStream(content: TextContent, prompt: string
     return;
   }
 
-  const promptContent = buildImprovePrompt(content, prompt);
+  // Use buildCustomActionPrompt for user-defined custom actions, buildImprovePrompt for built-in actions
+  const promptContent = isCustomAction
+    ? buildCustomActionPrompt(content, prompt)
+    : buildImprovePrompt(content, prompt);
 
   // Connect to background script
   const port = chrome.runtime.connect({ name: 'openai-stream' });
