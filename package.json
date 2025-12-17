@@ -1,5 +1,5 @@
 {
-  "name": "overleaf-copilot",
+  "name": "ai-agent-for-overleaf",
   "version": "0.1.9",
   "description": "AI-powered assistant for Overleaf LaTeX editor",
   "private": true,

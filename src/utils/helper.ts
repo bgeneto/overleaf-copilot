@@ -3,7 +3,7 @@ import { Options, TextContent } from "../types";
 import AES from 'crypto-js/aes';
 import encUtf8 from 'crypto-js/enc-utf8';
 
-const SECRET_PHRASE = "overleaf-copilot-secret-phrase-v1"; // Simple obfuscation key
+const SECRET_PHRASE = "ai-agent-for-overleaf-secret-phrase-v1"; // Simple obfuscation key
 
 const Prefixes = ["```latex\n", "```latex", "```"];
 const Suffixes = ["\n```", "```"];
