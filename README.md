@@ -2,6 +2,7 @@
 
 [![Chrome Web Store](https://img.shields.io/chrome-web-store/v/pcmffklbilmgckfkbncpoffmicdpfkmm?label=Chrome)](https://chrome.google.com/webstore/detail/ai-agent-for-overleaf/pcmffklbilmgckfkbncpoffmicdpfkmm)
 [![Edge Add-on](https://img.shields.io/badge/Edge-Add--on-blue)](https://microsoftedge.microsoft.com/addons/detail/ai-agent-for-overleaf/dgbgphmgphkibogcjhjhdmkjphejcead)
+[![Firefox Add-on](https://img.shields.io/badge/Firefox-Add--on-orange)](https://addons.mozilla.org/firefox/addon/ai-agent-for-overleaf/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
 **AI-powered code completion and text enhancement for the [Overleaf](https://www.overleaf.com) LaTeX editor.**
@@ -31,6 +32,7 @@ Discover related research on arXiv based on your selected text. Great for litera
 |---------|------|
 | **Google Chrome** | [Chrome Web Store](https://chrome.google.com/webstore/detail/ai-agent-for-overleaf/pcmffklbilmgckfkbncpoffmicdpfkmm) |
 | **Microsoft Edge** | [Edge Add-ons](https://microsoftedge.microsoft.com/addons/detail/ai-agent-for-overleaf/dgbgphmgphkibogcjhjhdmkjphejcead) |
+| **Mozilla Firefox** | [Firefox Add-ons](https://addons.mozilla.org/firefox/addon/ai-agent-for-overleaf/) *(requires Firefox 128+)* |
 
 ### Manual Installation (Development)
 
@@ -257,15 +259,32 @@ npm run watch
 # Production build
 npm run build
 
-# Create release zip
-npm run pack
+# Create release packages
+npm run pack:chrome    # Creates .zip for Chrome/Edge
+npm run pack:firefox   # Creates .xpi for Firefox
+npm run pack:all       # Creates both packages
 
 # Build + pack combined
-npm run repack
+npm run repack         # Build + pack all browsers
+npm run repack:chrome  # Build + pack Chrome only
+npm run repack:firefox # Build + pack Firefox only
 
 # Format code
 npm run format
 ```
+
+### Testing in Browsers
+
+#### Chrome/Edge
+1. Open `chrome://extensions/` (or `edge://extensions/`)
+2. Enable **Developer mode**
+3. Click **Load unpacked** and select the `build/` folder
+
+#### Firefox
+1. Open `about:debugging#/runtime/this-firefox`
+2. Click **Load Temporary Add-on**
+3. Select any file in the `build/` folder (e.g., `manifest.json`)
+4. Note: Firefox 128+ required due to `world: "MAIN"` content script support
 
 ### Project Structure
 

@@ -2,7 +2,7 @@
 
 ## Project Overview
 
-Browser extension (Chrome/Edge) that adds AI-powered code completion and text improvement features to the Overleaf LaTeX editor. Built with TypeScript, Preact, and integrates with OpenAI API.
+Browser extension (Chrome/Edge/Firefox) that adds AI-powered code completion and text improvement features to the Overleaf LaTeX editor. Built with TypeScript, Preact, and integrates with OpenAI API.
 
 ## Architecture
 
@@ -42,10 +42,14 @@ Custom events bridge the two worlds:
 ### Build Commands
 
 ```bash
-npm run watch   # Development build with source maps, auto-rebuild on changes
-npm run build   # Production build (no source maps)
-npm run pack    # Creates release/ai-agent-for-overleaf-v{version}.zip from build/
-npm run repack  # build + pack combined
+npm run watch          # Development build with source maps, auto-rebuild on changes
+npm run build          # Production build (no source maps)
+npm run pack:chrome    # Creates release/*.zip for Chrome/Edge
+npm run pack:firefox   # Creates release/*.xpi for Firefox  
+npm run pack:all       # Creates both Chrome and Firefox packages
+npm run repack         # Build + pack all browsers
+npm run repack:chrome  # Build + pack Chrome only
+npm run repack:firefox # Build + pack Firefox only
 ```
 
 Webpack outputs to `build/` directory. Pack script (`pack.js`) reads version from `build/manifest.json`.
@@ -152,9 +156,10 @@ Access via `getOptions()` from `src/utils/helper.ts`.
 
 ## Testing & Debugging
 
-- Load extension in Chrome via `chrome://extensions` → "Load unpacked" → select `build/` folder
+- **Chrome/Edge**: Load extension via `chrome://extensions` → "Load unpacked" → select `build/` folder
+- **Firefox**: Load via `about:debugging#/runtime/this-firefox` → "Load Temporary Add-on" (requires Firefox 128+)
 - Check console in both page context (main world) and extension context (isolated world)
-- Background script logs visible in extension's service worker inspector
+- Background script logs visible in extension's service worker inspector (Chrome) or debugger (Firefox)
 - Use `--mode=development` for source maps
 
 ## Integration Points
@@ -162,3 +167,10 @@ Access via `getOptions()` from `src/utils/helper.ts`.
 - **CodeMirror 6**: Relies on Overleaf's CM6 instance accessible via `.cm-content` element
 - **Overleaf UI**: Injects into `.ide-react-panel[data-panel-id="panel-pdf"]` for side panel features
 - **Chrome APIs**: `chrome.storage`, `chrome.runtime.sendMessage`, `chrome.tabs.create`
+- **Firefox Compatibility**: Uses `chrome.*` namespace which Firefox supports natively. No polyfills needed.
+
+## Cross-Browser Notes
+
+- **Manifest**: Chrome uses `service_worker` in background, Firefox uses `scripts` array. See `public/manifest-firefox.json`.
+- **Firefox Add-on ID**: `ai-agent-for-overleaf@bgeneto.com` (required for AMO signing)
+- **Min Firefox Version**: 128.0 (required for `world: "MAIN"` content script support)

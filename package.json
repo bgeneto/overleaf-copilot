@@ -6,8 +6,13 @@
   "scripts": {
     "watch": "webpack --mode=development --watch --config config/webpack.config.js",
     "build": "webpack --mode=production --config config/webpack.config.js",
-    "pack": "node pack.js",
-    "repack": "npm run build && npm run pack",
+    "pack": "node pack.js --chrome",
+    "pack:chrome": "node pack.js --chrome",
+    "pack:firefox": "node pack.js --firefox",
+    "pack:all": "node pack.js --chrome && node pack.js --firefox",
+    "repack": "npm run build && npm run pack:all",
+    "repack:chrome": "npm run build && npm run pack:chrome",
+    "repack:firefox": "npm run build && npm run pack:firefox",
     "format": "prettier --write --ignore-unknown \"{config,public,src}/**/*.{html,css,js,ts,json}\""
   },
   "devDependencies": {
