@@ -19,11 +19,6 @@ export async function* getSuggestion(content: TextContent, signal: AbortSignal, 
     };
     return;
   } else {
-    console.log('[Copilot Debug] Suggestion request:', {
-      baseURL: options.apiBaseUrl,
-      model: options.model,
-      apiKeyPrefix: options.apiKey?.substring(0, 15) + '...',
-    });
 
     const openai = new OpenAI({
       apiKey: options.apiKey,
@@ -33,7 +28,6 @@ export async function* getSuggestion(content: TextContent, signal: AbortSignal, 
 
     try {
       const promptContent = buildSuggestionPrompt(content, options.suggestionPrompt);
-      console.log('[Copilot Debug] Suggestion prompt (first 200 chars):', promptContent.substring(0, 200));
 
       const stream = await openai.chat.completions.create(
         {
@@ -50,21 +44,11 @@ export async function* getSuggestion(content: TextContent, signal: AbortSignal, 
         { signal: signal }
       );
 
-      console.log('[Copilot Debug] Suggestion stream started successfully');
-
-      let chunkCount = 0;
       for await (const chunk of stream) {
-        chunkCount++;
-        if (chunkCount <= 3) {
-          console.log(`[Copilot Debug] Suggestion chunk ${chunkCount}:`, chunk.choices[0]?.delta?.content?.substring(0, 50) || '');
-        }
         yield { kind: "token", content: chunk.choices[0]?.delta?.content || '' };
       }
-      console.log(`[Copilot Debug] Suggestion stream completed with ${chunkCount} chunks`);
     } catch (error) {
-      console.error('[Copilot Debug] Error in suggestion stream:', error);
       if (error instanceof APIUserAbortError) {
-        console.log('[Copilot Debug] Suggestion request was aborted');
         return;
       }
       yield { kind: "error", content: "An error occurred while generating the content.\n" + error };

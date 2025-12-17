@@ -93,8 +93,6 @@ function handleComplete() {
   // Then `onCompleteRequest` handles it.
   // `handleComplete` logic behaves same as before: triggers main world.
 
-  console.log('[Copilot Debug] handleComplete triggered');
-
   // Focus editor
   const editor = document.querySelector('.cm-content') as HTMLElement;
   if (editor) editor.focus();
@@ -230,7 +228,6 @@ function onCursorUpdate(event: CustomEvent<{ hasSelection: boolean, head?: numbe
   // Check if cursor actually moved
   const newHead = event.detail.head;
   if (newHead !== undefined && lastCursorHead !== null && newHead === lastCursorHead) {
-    console.log('[Copilot Debug] Skipping abort - cursor position unchanged');
     return;
   }
 
@@ -240,7 +237,6 @@ function onCursorUpdate(event: CustomEvent<{ hasSelection: boolean, head?: numbe
 
   // Don't abort if we just triggered a completion (avoid race condition)
   if (justTriggeredCompletion) {
-    console.log('[Copilot Debug] Skipping abort - completion was just triggered');
     return;
   }
 

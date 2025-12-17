@@ -185,7 +185,6 @@ const hookCmDispatch = (n: number) => {
     // Only check selection state, don't auto-trigger suggestions
     debouncedSelectionCheck();
   };
-  console.log('Overleaf Copilot: Hooked into CodeMirror dispatch');
 };
 
 hookCmDispatch(20);

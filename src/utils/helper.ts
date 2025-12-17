@@ -45,8 +45,7 @@ export async function getOptions() {
         }
       }
     } catch (e) {
-      console.warn('Failed to decrypt API key', e);
-      // Fallback: maybe it was not encrypted?
+      // Fallback: maybe it was not encrypted
     }
   }
 

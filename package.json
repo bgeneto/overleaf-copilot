@@ -1,7 +1,7 @@
 {
   "name": "overleaf-copilot",
-  "version": "0.2.8",
-  "description": "Copilot for Overleaf",
+  "version": "0.1.9",
+  "description": "AI-powered assistant for Overleaf LaTeX editor",
   "private": true,
   "scripts": {
     "watch": "webpack --mode=development --watch --config config/webpack.config.js",

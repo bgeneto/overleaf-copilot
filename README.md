@@ -1,4 +1,4 @@
-# <img src="public/icons/icon_48.png" width="45" align="left"> Overleaf Copilot
+# <img src="public/icons/icon_48.png" width="45" align="left"> AI Agent for Overleaf
 
 [![Chrome Web Store](https://img.shields.io/chrome-web-store/v/pcmffklbilmgckfkbncpoffmicdpfkmm?label=Chrome)](https://chrome.google.com/webstore/detail/overleaf-copilot/pcmffklbilmgckfkbncpoffmicdpfkmm)
 [![Edge Add-on](https://img.shields.io/badge/Edge-Add--on-blue)](https://microsoftedge.microsoft.com/addons/detail/overleaf-copilot/dgbgphmgphkibogcjhjhdmkjphejcead)

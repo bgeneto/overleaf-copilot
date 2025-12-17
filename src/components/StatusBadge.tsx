@@ -112,11 +112,11 @@ export const StatusBadge = ({ onComplete, onImprove, onFix, onAction, onSearch, 
                     </div>
                 </div>
             )}
-            <div class="copilot-status-badge-button" onClick={() => setMenuOpen(!menuOpen)} title="Overleaf Copilot Menu">
+            <div class="copilot-status-badge-button" onClick={() => setMenuOpen(!menuOpen)} title="AI Agent for Overleaf Menu">
                 <div class={`copilot-status-badge-icon ${isLoading ? 'loading' : ''}`}>
                     {isLoading ? <Loader size={12} /> : <Bot size={12} />}
                 </div>
-                <span class="copilot-status-badge-text">{isLoading ? 'Working...' : 'Copilot'}</span>
+                <span class="copilot-status-badge-text">{isLoading ? 'Working...' : 'AI Agent'}</span>
             </div>
         </div>
     );

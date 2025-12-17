@@ -29,7 +29,6 @@ function cosineSimilarity(vecA: number[], vecB: number[]) {
 export async function search(query: string, page: number) {
   const options = await getOptions();
   if (!options.apiKey) {
-    console.warn("No API Key set");
     return [];
   }
 
@@ -91,8 +90,7 @@ export async function search(query: string, page: number) {
       scored.sort((a, b) => b.score - a.score);
       rankedCandidates = scored;
     } catch (e) {
-      console.error("Embedding generation failed, falling back to keyword order", e);
-      // Fallback to original order, score 0?
+      // Fallback to original order
       rankedCandidates = candidates.map(c => ({ ...c, score: 0 }));
     }
   } else {

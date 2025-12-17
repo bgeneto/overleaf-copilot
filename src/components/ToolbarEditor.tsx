@@ -84,7 +84,7 @@ export const ToolbarEditor = ({ data, action, signal, options, onClose }: Toolba
         }
       }
     } catch (err) {
-      console.error("Improvement error:", err);
+      // Error handled silently
     } finally {
       setLoading(false);
     }

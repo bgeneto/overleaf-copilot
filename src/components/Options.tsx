@@ -284,7 +284,7 @@ const OptionsForm = () => {
           ids: [`main-${idSuffix}`, `iso-${idSuffix}`]
         });
       } catch (e) {
-        console.warn('Failed to unregister scripts', e);
+        // Silent failure
       }
 
       const customDomains = (state.customDomains || []).filter(d => d !== domain);
@@ -394,7 +394,7 @@ const OptionsForm = () => {
 
           <h2>Suggestion</h2>
           <div class="pure-u-3-4">
-            <p>Configure AI-powered completions. Click the Copilot menu or use your keyboard shortcut to trigger completion at the cursor.
+            <p>Configure AI-powered completions. Click the AI Agent menu or use your keyboard shortcut to trigger completion at the cursor.
               Menu actions insert text automatically.</p>
           </div>
           <div class="pure-control-group">
@@ -538,7 +538,7 @@ const OptionsForm = () => {
         </div>
       </form>
       <hr style="margin-top: 20px" />
-      <p>Overleaf Copilot. Version: {version} by bgeneto.</p>
+      <p>AI Agent for Overleaf. Version: {version} by bgeneto.</p>
     </Fragment >
   );
 }
