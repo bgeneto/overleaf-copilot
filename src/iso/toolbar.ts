@@ -3,14 +3,14 @@ import { h, render } from "preact";
 import { ToolbarEditor, ToolbarPosition } from "../components/ToolbarEditor";
 import { Toolbar } from "../components/Toolbar";
 import { FindSimilar } from "../components/FindSimilar";
+import { getCursorOrSelectionRect } from "../utils/dom";
 
 export function showToolbar(data: EditorSelectionData, options: Options, signal: AbortSignal) {
   document.getElementById('copilot-toolbar')?.remove();
   document.getElementById('copilot-toolbar-editor')?.remove();
 
-  const cursor = document.querySelector('.cm-cursor-primary') as HTMLElement;
-  if (cursor == null) return;
-  const rect = cursor.getBoundingClientRect();
+  const rect = getCursorOrSelectionRect();
+  if (!rect) return;
 
   const toolbar = document.createElement('div');
   toolbar.setAttribute('id', 'copilot-toolbar');

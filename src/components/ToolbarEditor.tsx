@@ -201,7 +201,7 @@ export const ToolbarEditor = ({ data, action, signal, options, onClose }: Toolba
     setShowDiff(!showDiff)
   }
 
-  return <div class="rtoolbar-editor-containe">
+  return <div class="toolbar-editor-container">
     <div class="pure-g toolbar-editor-header" onMouseDown={startDrag as any}>
       <span class="pure-u-1-4 header-title">
         <Icon name={action.icon || "sparkles"} size={16} />

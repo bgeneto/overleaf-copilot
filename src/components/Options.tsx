@@ -1,5 +1,5 @@
 import { render, Fragment } from 'preact';
-import { useEffect, useState } from 'preact/hooks'
+import { useEffect, useState, useRef } from 'preact/hooks'
 import { LOCAL_STORAGE_KEY_OPTIONS, MODELS } from '../constants';
 import { Options } from '../types';
 import { getOptions, encryptApiKey } from '../utils/helper';
@@ -16,6 +16,7 @@ const OptionsForm = () => {
   const [connectionStatus, setConnectionStatus] = useState<Feedback | null>(null);
   const [addDomainStatus, setAddDomainStatus] = useState<Feedback | null>(null);
   const [newDomain, setNewDomain] = useState<string>('');
+  const isAddingDomain = useRef(false);
 
   useEffect(() => {
     getOptions().then((options) => {
@@ -174,10 +175,14 @@ const OptionsForm = () => {
   };
 
   const addDomain = async () => {
+    if (isAddingDomain.current) return;
+    isAddingDomain.current = true;
+
     setAddDomainStatus({ text: 'Adding...', type: 'info' });
     let domain = newDomain.trim();
     if (!domain) {
       setAddDomainStatus(null);
+      isAddingDomain.current = false;
       return;
     }
 
@@ -193,6 +198,7 @@ const OptionsForm = () => {
     } catch {
       setMessage({ text: 'Invalid domain URL', type: 'error' });
       setAddDomainStatus(null);
+      isAddingDomain.current = false;
       return;
     }
 
@@ -210,24 +216,31 @@ const OptionsForm = () => {
       }
 
       const idSuffix = origin.replace(/[^a-zA-Z0-9]/g, '-');
-      await (chrome as any).scripting.registerContentScripts([
-        {
-          id: `main-${idSuffix}`,
-          js: ['contentMainScript.js'],
-          matches: [origin + '/project/*'],
-          world: 'MAIN',
-          runAt: 'document_idle',
-          persistAcrossSessions: true
-        },
-        {
-          id: `iso-${idSuffix}`,
-          js: ['contentIsoScript.js'],
-          css: ['contentIsoScript.css'],
-          matches: [origin + '/project/*'],
-          runAt: 'document_idle',
-          persistAcrossSessions: true
+      try {
+        await (chrome as any).scripting.registerContentScripts([
+          {
+            id: `main-${idSuffix}`,
+            js: ['contentMainScript.js'],
+            matches: [origin + '/project/*'],
+            world: 'MAIN',
+            runAt: 'document_idle',
+            persistAcrossSessions: true
+          },
+          {
+            id: `iso-${idSuffix}`,
+            js: ['contentIsoScript.js'],
+            css: ['contentIsoScript.css'],
+            matches: [origin + '/project/*'],
+            runAt: 'document_idle',
+            persistAcrossSessions: true
+          }
+        ]);
+      } catch (err: any) {
+        // Ignore "duplicate script" errors, as permission was granted/exists
+        if (!err.message?.includes('already registered')) {
+          throw err;
         }
-      ]);
+      }
 
       const customDomains = [...(state.customDomains || []), origin];
       const uniqueDomains = Array.from(new Set(customDomains));
@@ -245,6 +258,7 @@ const OptionsForm = () => {
         setMessage({ text: 'Unknown error', type: 'error' });
       }
     } finally {
+      isAddingDomain.current = false;
       // Clear status after delay if it's stuck loading (though successful paths set their own status)
       setTimeout(() => {
         setAddDomainStatus(prev => (prev?.text === 'Adding...' ? null : prev));
@@ -296,7 +310,7 @@ const OptionsForm = () => {
         <header className="options-header">
           <div className="options-header-title">
             <div className="options-header-icon">
-              <img src="icons/icon_48.png" alt="AI Agent" width={48} height={48} />
+              <img src="icons/icon_64.png" alt="AI Agent" width={64} height={64} />
             </div>
             <div>
               <h1>AI Agent for Overleaf</h1>

@@ -72,7 +72,7 @@ body {
 .options-header-title {
     display: flex;
     align-items: center;
-    gap: 12px;
+    gap: 24px;
 }
 
 .options-header-title h1 {
@@ -83,8 +83,8 @@ body {
 }
 
 .options-header-icon {
-    width: 40px;
-    height: 40px;
+    width: 64px;
+    height: 64px;
     display: flex;
     align-items: center;
     justify-content: center;

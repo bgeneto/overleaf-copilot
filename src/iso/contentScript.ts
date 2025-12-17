@@ -10,6 +10,7 @@ import { BUILTIN_ACTIONS, PROMPTS } from '../prompts';
 import { StatusBadge } from '../components/StatusBadge';
 import { ToolbarEditor } from '../components/ToolbarEditor';
 import { render, h } from 'preact';
+import { getCursorOrSelectionRect } from '../utils/dom';
 
 // Declare Firefox-specific function
 declare function cloneInto<T>(obj: T, targetScope: any, options?: { cloneFunctions?: boolean }): T;
@@ -102,9 +103,9 @@ function openToolbarEditor(action: any, data: any) {
   document.getElementById('copilot-toolbar-editor')?.remove();
 
   // Find cursor position
-  const cursor = document.querySelector('.cm-cursor-primary') as HTMLElement;
-  if (!cursor) return;
-  const rect = cursor.getBoundingClientRect();
+  // Find cursor position / selection
+  const rect = getCursorOrSelectionRect();
+  if (!rect) return;
 
   const toolbarEditor = document.createElement('div');
   toolbarEditor.setAttribute('id', 'copilot-toolbar-editor');
