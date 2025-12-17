@@ -22,6 +22,12 @@ If you configure a custom API Base URL (e.g., OpenRouter, Azure OpenAI, or a loc
 - **Data Sent**: Data is sent directly to the URL you specify in the settings.
 - **Control**: You have full control over where your data goes. We do not validate or monitor the security of custom endpoints involved.
 
+### 2.3. ArXiv (Find Similar Papers)
+If you use the "Find Similar Papers" feature:
+- **Data Sent**: Search queries (derived from selected text) are sent publicly to the arXiv API (`export.arxiv.org`).
+- **Purpose**: To fetch metadata of relevant academic papers.
+- **Note**: This is a direct request from your browser to the arXiv public API. No personal data is attached, but the search query itself is visible to arXiv.
+
 ## 3. Permissions Usage
 
 *   **Host Permissions**: We request access to `overleaf.com` to integrate the assistant into the editor. For self-hosted instances, you must granting permission explicitly for that specific domain.
